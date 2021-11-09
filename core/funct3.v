@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 08.11.2021 21:53:21
+// Create Date: 08.11.2021 21:49:50
 // Design Name: 
-// Module Name: alu_def
+// Module Name: funct3
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,12 +18,19 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`define ADD_ALU             4'b0000
-`define SUB_ALU             4'b0001
-`define AND_ALU             4'b0010
-`define OR_ALU              4'b0011
-`define SLL_ALU             4'b0100
-`define SRA_ALU             4'b0101
-`define MAC_ALU             4'b0110
-`define SW_ALU              4'b0111
-`define LW_ALU              4'b1000
+
+`define funct3_and      3'b111
+`define funct3_or       3'b110
+`define funct3_add      3'b000
+`define funct3_sub      3'b000
+`define funct3_sll      3'b001
+`define funct3_sra      3'b101    
+
+`define funct3_addi     3'b000
+
+`define funct3_beq      3'b000
+
+`define funct3_lw       3'b010
+
+`define funct3_sw       3'b010
+

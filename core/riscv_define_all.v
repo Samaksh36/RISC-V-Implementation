@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 08.11.2021 21:53:21
+// Create Date: 08.11.2021 21:52:52
 // Design Name: 
-// Module Name: alu_def
+// Module Name: riscv_define_all
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,12 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`define ADD_ALU             4'b0000
-`define SUB_ALU             4'b0001
-`define AND_ALU             4'b0010
-`define OR_ALU              4'b0011
-`define SLL_ALU             4'b0100
-`define SRA_ALU             4'b0101
-`define MAC_ALU             4'b0110
-`define SW_ALU              4'b0111
-`define LW_ALU              4'b1000
+`include "alu_def.v"
+`include "funct3.v"
+`include "funct7.v"
+`include "opcode.v"

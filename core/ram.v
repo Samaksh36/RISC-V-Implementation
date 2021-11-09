@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 08.11.2021 21:53:21
+// Create Date: 07.11.2021 22:14:28
 // Design Name: 
-// Module Name: alu_def
+// Module Name: ram
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,12 +18,9 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`define ADD_ALU             4'b0000
-`define SUB_ALU             4'b0001
-`define AND_ALU             4'b0010
-`define OR_ALU              4'b0011
-`define SLL_ALU             4'b0100
-`define SRA_ALU             4'b0101
-`define MAC_ALU             4'b0110
-`define SW_ALU              4'b0111
-`define LW_ALU              4'b1000
+
+
+module ram(
+
+    );
+endmodule
