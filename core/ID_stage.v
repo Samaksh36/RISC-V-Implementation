@@ -204,10 +204,10 @@ module ID_stage(
                     alu_op = `SW_ALU;
 
                     r1_read_enable = 1;
-                    r2_read_enable = 0;
+                    r2_read_enable = 1;
 
                     r1_addr = rs1;
-                    r2_addr = 0;
+                    r2_addr = rs2;
 
                     rd_addr = 0;
                     rd_we = 0;
@@ -262,7 +262,7 @@ module ID_stage(
             op_2 = r2_data;
         end
         else if (r2_read_enable == 0) begin
-            op_1 = imm1_reg; // ADDI Exclusive
+            op_2 = imm1_reg; // ADDI Exclusive
         end
     end
     

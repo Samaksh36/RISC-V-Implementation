@@ -70,7 +70,7 @@ module regfile(
     always @(posedge clk or posedge reset) begin
         if(reset == 1) begin
             for (i = 0; i<32; i = i + 1) begin
-                register_file[i] <= i;
+                register_file[i] <= 0;
             end
         end
     end
