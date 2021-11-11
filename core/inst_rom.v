@@ -18,7 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`define inst_mem_size 16
+`define inst_mem_size 256
 `define inst_mem_size_two_power 20
 
 module inst_rom(
@@ -43,10 +43,10 @@ module inst_rom(
 
     // Read For CPU
     always @(*) begin
-        if (cpu_addr > `inst_mem_size) begin
+        if ((cpu_addr>>2) > 256) begin
             cpu_inst = 32'b00000000000000000000000000010011;
         end
-        if (read_enable_cpu == 1) begin
+        else if (read_enable_cpu == 1) begin
             cpu_inst = instruction_memory[cpu_addr>>2]; // PC/4, as PC=PC+4
         end
     end

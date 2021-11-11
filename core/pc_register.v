@@ -22,14 +22,17 @@
 
 module pc_register(
     input go,
+
     input clk,
     input reset,
+    
     input branch,
-    input [31:0] prev_pc,
-    input [5:0] do_stall,
     input [31:0] branch_addr,
-    output reg [31:0] pc,
-    output reg read_enable_cpu
+    
+    input [5:0] do_stall,
+    
+    // output reg [31:0] pc,
+    output reg [31:0] pc_cpu
     );
 
     reg [31:0] pc_local;
@@ -52,14 +55,35 @@ module pc_register(
     //         end    
     //     end
     // end
+    // always @(posedge clk) begin
+    //     if(go == 1) begin
+    //         if (branch == 1) begin
+    //             pc <= branch_addr;           
+    //             pc_cpu <= branch_addr;           
+    //             read_enable_cpu <= 1;
+    //         end
+    //         read_enable_cpu <= 1;
+    //         pc <= prev_pc; 
+    //         pc_cpu <= prev_pc; 
+    //     end
+    // end
+
     always @(posedge clk) begin
-        if(go == 1) begin
-            if (branch == 1) begin
-                pc <= branch_addr;           
-                read_enable_cpu <= 1;
-            end
-            read_enable_cpu <= 1;
-            pc <= prev_pc; 
+        if(reset == 1) begin
+            pc_local <= 0;
         end
+        else if (go == 1) begin
+            if (branch == 1) begin
+                pc_local <= branch_addr;
+            end
+            else begin
+                pc_local <= pc_local + 4;
+            end
+        end
+    end
+
+    always @(*) begin
+        // pc = pc_local;
+        pc_cpu = pc_local;
     end
 endmodule

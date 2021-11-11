@@ -42,8 +42,8 @@ module ID_stage(
     output reg [31:0] mem_offset,
     output reg rd_we,
 
-    output br, // PC output
-    output [31:0] branch_addr,
+    output reg br, // PC output
+    output reg [31:0] branch_addr,
     
     output reg [3:0] alu_op,
 
@@ -64,6 +64,7 @@ module ID_stage(
     wire [4:0] rs2 = inst[24:20];
     
     wire [31:0] pc_plus_Btype; // Only used for BEQ
+    wire [31:0] Btype = {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
     assign pc_plus_Btype = pc + {{20{inst[31]}}, inst[7], inst[30:25], inst[11:8], 1'b0};
 
     wire reg1_reg2_eq; // only used for BEQ
@@ -75,8 +76,19 @@ module ID_stage(
     always @(*) begin
         if(reset == 1)begin
             alu_op = 0;
+            br = 0;
+            branch_addr = 0;
+            r1_read_enable = 0;
+            r2_read_enable = 0;
+            r1_addr = 0;
+            r2_addr = 0;
+            rd_addr = 0;
+            mem_offset = 0;
+            rd_we = 0;
         end
         else begin
+            br = 0;
+            branch_addr = 0;
             case (opcode)
                 `opcode_rtype: begin
                     case (funct3)
@@ -233,7 +245,27 @@ module ID_stage(
                     mem_offset = {{20{Itype_imm[11]}}, Itype_imm};
                 end
                 // ADD BRANCH
+                
+                `opcode_beq: begin
+                    alu_op = `BEQ_ALU;
+                    
+                    r1_read_enable = 1;
+                    r2_read_enable = 1;
 
+                    r1_addr = rs1;
+                    r2_addr = rs2;
+
+                    rd_addr = rd;
+                    rd_we = 0;
+
+                    imm1_reg = 0;
+
+                    mem_offset = 0;
+                    if (reg1_reg2_eq == 1) begin
+                        br = 1;
+                        branch_addr = pc_plus_Btype;
+                    end
+                end
                 default: begin
                     $display("");
                 end

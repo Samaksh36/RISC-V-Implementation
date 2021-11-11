@@ -18,20 +18,19 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
+// Remove RAM ports
 
 module riscv_cpu(
     input clk,
     input reset,
-    input [31:0] start_pc,
+    
     input go, // Start after the ROM is loaded
-    input [31:0] mem_input_data, // load and Store
+
     input [31:0] inst, // Connect to ROM
     output [31:0] next_inst_addr, // Connect to ROM
-    output halt, // Stop once all instructions are completed
-    output [31:0] mem_addr, // Connect to RAM
-    output [31:0] mem_output_data, // Connect to RAM
-    output read_enable_cpu // Connect to ROM
+    output read_enable_cpu, // Connect to ROM
+
+    output halt // Stop once all instructions are completed
     );
 
     wire branch;
@@ -40,28 +39,40 @@ module riscv_cpu(
     wire [5:0] do_stall;
     wire stall_IF;
 
+    wire [31:0] pc_if;
+
     pc_register pc(
         .go(go),
+
         .clk(clk),
         .reset(reset),
+        
         .branch(br),
-        .prev_pc(start_pc),
-        .do_stall(do_stall),
         .branch_addr(branch_addr),
         
-        .pc(next_inst_addr),
-        .read_enable_cpu(read_enable_cpu)
+        .do_stall(do_stall),
+        
+        // .pc(next_inst_addr),
+        .pc_cpu(pc_if) // Carry over till ID
     );
     
     wire [31:0] inst_o;
-
+    wire [31:0] pc_id;
     IF_stage IF(
         .reset(reset),
         .go(go),
+        
         .inst(inst),
+        .pc_if(pc_if),
+        
         .branch(branch),
         .branch_addr(branch_addr),
+        
         .inst_o(inst_o),
+        .pc_id(pc_id),
+        .pc_rom(next_inst_addr),
+        .read_enable_cpu(read_enable_cpu),
+
         .do_stall(stall_IF)
     );
     
@@ -95,6 +106,22 @@ module riscv_cpu(
         .r2_data(id_r2_data) // Data stored in r2-addr both are outputs to the ID stage
     );
 
+    wire [31:0] pc_id_reg;
+    wire [31:0] inst_id_reg;
+
+    reg_IF_ID pipeline_reg_FD(
+        .clk(clk),
+        .reset(reset),
+
+        .inst_if(inst_o),
+        .pc_if(pc_id),
+        .do_stall(stall_IF),
+        .br(br),
+
+        .pc_id(pc_id_reg),
+        .inst_id(inst_id_reg)
+    );
+
     wire [31:0] op1_ex;
     wire [31:0] op2_ex;
     wire [4:0] rd_addr_ex;
@@ -103,10 +130,10 @@ module riscv_cpu(
     wire [3:0] alu_op; // EX Input to perform the instruction
     wire [31:0] pc_out_id; // Carry forward the PC 
 
-    ID_stage id(
+    ID_stage id( // ADD BEQ Functionality 
         .reset(reset),
-        .pc(prev_is_load),
-        .inst(inst_o),
+        .pc(pc_id_reg),
+        .inst(inst_id_reg),
         
         .r1_data(id_r1_data),
         .r2_data(id_r2_data), // Givne the addr get the data from the reg file
@@ -131,6 +158,11 @@ module riscv_cpu(
         .pc_out(pc_out_id) // carrying over the PC 
     );
 
+
+    // INSERT PIPELINE REGISTER
+    
+    
+    
     wire [31:0] rd_data_ex;
     wire [4:0] rd_addr_wb;
     wire rd_we_data;
