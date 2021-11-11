@@ -92,9 +92,9 @@ module riscv_cpu(
         .clk(clk),
         .reset(reset),
 
-        .write_enable(wb_write_enable), // WB Stage Only
-        .w_addr(wb_w_addr), // Addr from WB stage to write data, 32==>5 bits
-        .w_data(wb_w_data), // Data from WB stage to write data, 32 bits 
+        .write_enable(reg_we_mem), // WB Stage Only
+        .w_addr(reg_addr_mem), // Addr from WB stage to write data, 32==>5 bits
+        .w_data(reg_data_mem), // Data from WB stage to write data, 32 bits 
         
         .r1_read_enable(id_r1_read_enable), // From ID to read register R1
         .r1_addr(id_r1_addr), // Addr to Read from r1 register(ROM Logic)
@@ -157,10 +157,37 @@ module riscv_cpu(
 
         .pc_out(pc_out_id) // carrying over the PC 
     );
+    
+    wire [31:0] reg_op1_ex;
+    wire [31:0] reg_op2_ex;
+    wire [4:0] reg_rd_addr_ex;
+    wire reg_rd_we_ex;
+    wire [31:0] reg_mem_offset_ex; // go to ex to calc final mem addr
+    wire [3:0] reg_alu_op; // EX Input to perform the instruction
 
 
     // INSERT PIPELINE REGISTER
+    reg_ID_EX pipeline_reg_DE(
+        .clk(clk),
+        .reset(reset),
     
+        .id_op_1(op1_ex), // output to ALU rs1
+        .id_op_2(op2_ex), // output to ALU rs2
+        .id_alu_op(alu_op),
+
+        .id_rd_addr(rd_addr_ex), // Only passes through EX for WB stage
+        .id_rd_we(rd_we_ex),
+        .id_mem_offset(mem_offset_ex),
+
+
+        .ex_op_1(reg_op1_ex), // output to ALU rs1
+        .ex_op_2(reg_op2_ex), // output to ALU rs2
+        .ex_alu_op(reg_alu_op),
+
+        .ex_rd_addr(reg_rd_addr_ex), // Only passes through EX for WB stage
+        .ex_rd_we(reg_rd_we_ex),
+        .ex_mem_offset(reg_mem_offset_ex)        
+    ); 
     
     
     wire [31:0] rd_data_ex;
@@ -173,13 +200,13 @@ module riscv_cpu(
     EX_stage ex(
         .reset(reset),
     
-        .op_1(op1_ex), // From ID input from Reg1
-        .op_2(op2_ex), // From ID input from Reg1
-        .alu_op(alu_op), // Operating to do
+        .op_1(reg_op1_ex), // From ID input from Reg1
+        .op_2(reg_op2_ex), // From ID input from Reg1
+        .alu_op(reg_alu_op), // Operating to do
 
-        .rd_addr(rd_addr_ex), // Location to write the data gotten from ID  
-        .rd_we(rd_we_ex), // write enable 1 or 0
-        .mem_offset(mem_offset_ex), // RAM location to write 
+        .rd_addr(reg_rd_addr_ex), // Location to write the data gotten from ID  
+        .rd_we(reg_rd_we_ex), // write enable 1 or 0
+        .mem_offset(reg_mem_offset_ex), // RAM location to write 
 
         .rd_addr_wb(rd_addr_wb), // output = input for WB 
         .rd_we_wb(rd_we_wb), // output = input for WB
@@ -206,17 +233,47 @@ module riscv_cpu(
         .mem_output_data(ram_data) // output from MEM will only be needed for LW hence it will be input for the MEM stage 
     );
 
+    wire [4:0] mem_rd_addr;
+    wire mem_rd_we;
+    wire [31:0] mem_rd_data;
+    wire [31:0] mem_mem_addr;
+
+    wire [3:0] mem_alu_op;
+    wire [31:0] mem_sw_data;
+
+    // INSERT PIPELINE REGISTER
+    reg_EX_MEM pipeline_reg_EM(
+        .clk(clk),
+        .reset(reset),
+
+        .ex_rd_addr(rd_addr_wb), // output = for WB 
+        .ex_rd_we(rd_we_wb), // output = for WB
+        .ex_rd_data(rd_data_ex), // Calculated Data for WB 
+        .ex_mem_addr(mem_addr_mem), // Calculated addr to write to or load from 
+
+        .ex_alu_op(alu_op_mem), // Used to check if LW or SW is done in the MEM stage 
+        .ex_op_2(op_2_mem), // This is used to send to the mem stage, as we have to STORE r2 in memory for SW
+
+        .mem_rd_addr(mem_rd_addr), // output reg = output
+        .mem_rd_we(mem_rd_we), // output reg = output 
+        .mem_rd_data(mem_rd_data), // data to write in register in WB stage two main functions only sent to the output reg is SW or LW is not the alu_op
+        .mem_mem_addr(mem_mem_addr), // LW/SW addr for write or read 
+
+        .mem_alu_op(mem_alu_op), // SW or LW 
+        .mem_op_2(mem_sw_data) // Input from EX stage for the SW operation
+    );
+ 
     // TODO Connect RAM TO MEM and WB 
     mem_stage M_stage(
         .reset(reset),
 
-        .rd_addr_mem(rd_addr_wb), // input = output
-        .rd_we_mem(rd_we_wb), // input = output 
-        .rd_data_mem(rd_data_ex), // data to write in register in WB stage two main functions only sent to the output reg is SW or LW is not the alu_op
-        .mem_addr_mem(mem_addr_mem), // LW/SW addr for write or read 
+        .rd_addr_mem(mem_rd_addr), // input = output
+        .rd_we_mem(mem_rd_we), // input = output 
+        .rd_data_mem(mem_rd_data), // data to write in register in WB stage two main functions only sent to the output reg is SW or LW is not the alu_op
+        .mem_addr_mem(mem_mem_addr), // LW/SW addr for write or read 
 
-        .alu_op_mem(alu_op_mem), // SW or LW 
-        .sw_data(op_2_mem), // Input from EX stage for the SW operation
+        .alu_op_mem(mem_alu_op), // SW or LW 
+        .sw_data(mem_sw_data), // Input from EX stage for the SW operation
 
         .ram_data(ram_data), // Input from RAM 
 
@@ -229,5 +286,24 @@ module riscv_cpu(
         .ram_read_enable(ram_read_enable),
         .ram_write_enable(ram_we)
     );
+    // Add Final Register For pipelining 
+
+    wire [31:0] reg_data_mem; // If LW or SW not done then =rd_data_mama, else will be assigned the LW data which is ram_data
+    wire [4:0] reg_addr_mem; // wire output thing as we need the addr to either lw or for the Wb
+    wire reg_we_mem; // Outout is inoptu,
+
+    reg_MEM_WB MW(
+        .clk(clk),
+        .reset(reset),
+
+        .mem_data_mem(wb_w_data),
+        .mem_addr_mem(wb_w_addr),
+        .mem_we_mem(wb_write_enable),
+
+        .reg_data_mem(reg_data_mem),
+        .reg_addr_mem(reg_addr_mem),
+        .reg_we_mem(reg_we_mem)
+    );
+
 
 endmodule

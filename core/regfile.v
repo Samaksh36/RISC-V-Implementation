@@ -66,7 +66,8 @@ module regfile(
             r2_data = register_file[r2_addr];
     end
 
-    integer i, j;
+    integer i;
+    integer j = 0;
     always @(posedge clk or posedge reset) begin
         if(reset == 1) begin
             for (i = 0; i<32; i = i + 1) begin
@@ -75,10 +76,10 @@ module regfile(
         end
     end
 
-//    always @(posedge clk) begin
-//        $display("\n=============  REGFILE DUMP =============\n");
-//        for(j = 0; i < 32; j = j + 1) begin
-//            $display("register[%0d]: %0x", j, register_file[j]);
-//        end
-//    end
+   always @(posedge clk) begin
+       $display("\n=============  REGFILE DUMP =============\n");
+       for(j = 0; j < 32; j = j + 1) begin
+           $display("register[%0d]:\t%0d", j, register_file[j]);
+       end
+   end
 endmodule
