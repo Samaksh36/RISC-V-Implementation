@@ -24,6 +24,8 @@ module reg_EX_MEM(
     input clk,
     input reset,
 
+    input [31:0] inst_ex_mem,
+
     input [4:0] ex_rd_addr, // output = input for WB 
     input ex_rd_we, // output = input for WB
     input [31:0] ex_rd_data, // Calculated Data for WB 
@@ -38,7 +40,9 @@ module reg_EX_MEM(
     output reg [31:0] mem_mem_addr, // LW/SW addr for write or read 
 
     output reg [3:0] mem_alu_op, // SW or LW 
-    output reg [31:0] mem_op_2 // Input from EX stage for the SW operation
+    output reg [31:0] mem_op_2, // Input from EX stage for the SW operation
+    
+    output reg [31:0] ex_mem_inst
     );
 
     always @(posedge clk) begin
@@ -62,4 +66,8 @@ module reg_EX_MEM(
         end
     end
     
+    always @(posedge clk) begin
+        ex_mem_inst <= inst_ex_mem;
+    end
+
 endmodule

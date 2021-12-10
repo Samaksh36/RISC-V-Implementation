@@ -70,7 +70,7 @@ module pc_register(
 
     always @(posedge clk) begin
         if(reset == 1) begin
-            pc_local <= 0;
+            pc_local <= -4;
         end
         else if (go == 1) begin
             if (branch == 1) begin

@@ -33,15 +33,19 @@ module regfile(
 
     input r2_read_enable, // From ID to read register R1
     input [4:0] r2_addr, // Addr to Read from r1 register(ROM Logic)
+    
+    input r3_read_enable, // From ID to read register R1
+    input [4:0] r3_addr, // Addr to Read from r1 register(ROM Logic) // only for MAC operation 
 
     output reg [31:0] r1_data, // Data stored in r1-addr 
-    output reg [31:0] r2_data // Data stored in r2-addr both are outputs to the ID stage
+    output reg [31:0] r2_data, // Data stored in r2-addr both are outputs to the ID stage
+    output reg [31:0] r3_data // Data stored in r2-addr both are outputs to the ID stage
     );
 
     reg [31:0] register_file [0:31];
     
     // Write From WB
-    always @(posedge clk) begin
+    always @(*) begin
         if (reset == 0 && write_enable == 1) begin
             if(w_addr != 0) begin
                 register_file[w_addr] <= w_data; // Writing data to the register
@@ -64,6 +68,14 @@ module regfile(
         end
         else 
             r2_data = register_file[r2_addr];
+    end
+
+    always @(*) begin
+        if(reset == 1 || r3_read_enable == 0 || r3_addr == 0) begin
+            r3_data = 0;
+        end
+        else 
+            r3_data = register_file[r3_addr];
     end
 
     integer i;

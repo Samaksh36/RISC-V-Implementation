@@ -37,7 +37,9 @@ module IF_stage( // Add Stall Functionality
     
     output reg read_enable_cpu,
 
-    output reg do_stall
+    output reg do_stall,
+    
+    output reg [31:0] IF_inst
     );
     // always @(*) begin
     //     if (go == 1) begin
@@ -81,5 +83,9 @@ module IF_stage( // Add Stall Functionality
             end
         end
     end
-
+    
+    always @(*) begin
+        IF_inst = inst;
+    end    
+    
 endmodule

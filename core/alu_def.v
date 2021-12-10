@@ -27,4 +27,4 @@
 `define MAC_ALU             4'b0110
 `define SW_ALU              4'b0111
 `define LW_ALU              4'b1000
-`define BEQ_ALU              4'b1001
+`define BEQ_ALU             4'b1001

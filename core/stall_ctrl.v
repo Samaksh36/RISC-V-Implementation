@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 08.11.2021 21:50:40
+// Create Date: 03.12.2021 18:48:58
 // Design Name: 
-// Module Name: funct7
+// Module Name: stall_ctrl
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -18,12 +18,9 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-`define funct7_and      7'b0000000
-`define funct7_or       7'b0000000
 
-`define funct7_add      7'b0000000
-`define funct7_sub      7'b0100000
-`define funct7_sll      7'b0000000
-`define funct_sra       7'b0100000
 
-`define funct7_mac      7'b0000000
+module stall_ctrl(
+
+    );
+endmodule

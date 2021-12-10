@@ -35,3 +35,5 @@
 `define opcode_beq          7'b1100011
 
 `define opcode_lw           7'b0000011
+
+`define opcode_mac          7'b1111111

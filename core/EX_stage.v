@@ -25,19 +25,23 @@ module EX_stage(
     
     input [31:0] op_1, // From ID input from Reg1
     input [31:0] op_2, // From ID input from Reg1
+    input [31:0] op_3, // From ID input from Reg1
     input [3:0] alu_op, // Operating to do
 
     input [4:0] rd_addr, // Location to write the data gotten from ID  
     input rd_we, // write enable 1 or 0
     input [31:0] mem_offset, // RAM location to write 
-
+    
+    input [31:0] inst_EX,
+    
     output reg [4:0] rd_addr_wb, // output = input for WB 
     output reg rd_we_wb, // output = input for WB
     output reg [31:0] rd_data, // Calculated Data for WB 
     output reg [31:0] mem_addr_mem, // Calculated addr to write to or load from 
 
     output wire [3:0] alu_op_mem, // Used to check if LW or SW is done in the MEM stage 
-    output wire [31:0] op_2_mem // This is used to send to the mem stage, as we have to STORE r2 in memory for SW
+    output wire [31:0] op_2_mem, // This is used to send to the mem stage, as we have to STORE r2 in memory for SW
+    output reg [31:0] EX_inst
     );
 
     assign op_2_mem = op_2; // For memory store/load
@@ -45,11 +49,13 @@ module EX_stage(
     wire [31:0] alu_register;
     reg [31:0] rs1_alu;
     reg [31:0] rs2_alu;
+    reg [31:0] rs3_alu;
     reg [3:0] opcode_alu;
 
     alu alu_ex(
         .rs1(rs1_alu),
         .rs2(rs2_alu),
+        .rs3(rs3_alu),
         .reset(reset),
         .opcode(opcode_alu),
         .rd(alu_register) // Connect ALU REGISTER To ThE rd_data or mem_addr_mem
@@ -60,7 +66,10 @@ module EX_stage(
         if(reset == 1) begin
             rs1_alu = 0;
             rs2_alu = 0;
-            opcode_alu = 0;        
+            rs3_alu = 0;
+            opcode_alu = 0;      
+            rd_addr_wb = 0;
+            rd_data = 0;  
         end
         else begin // Perform the ALU operations 
             case (alu_op)
@@ -103,7 +112,13 @@ module EX_stage(
                     rs1_alu = op_1;
                     rs2_alu = mem_offset;
                     opcode_alu = `ADD_ALU;
-                end 
+                end
+                `MAC_ALU: begin
+                    rs1_alu = op_1;
+                    rs2_alu = op_2;
+                    rs3_alu = op_3;
+                    opcode_alu = `MAC_ALU;
+                end
                 default: begin
                 end
             endcase
@@ -142,10 +157,16 @@ module EX_stage(
             `LW_ALU: begin
                 rd_data = 0;
                 mem_addr_mem = alu_register;
+            end
+            `MAC_ALU: begin
+                rd_data = alu_register;
             end 
             default: begin
             end
         endcase
     end
-
+    
+    always @(*) begin
+        EX_inst = inst_EX;
+    end
 endmodule

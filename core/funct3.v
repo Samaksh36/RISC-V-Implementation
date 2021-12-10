@@ -34,3 +34,4 @@
 
 `define funct3_sw       3'b010
 
+`define funct3_mac      3'b000

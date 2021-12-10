@@ -48,6 +48,7 @@ module alu(
     input reset,
     input [31:0]    rs1,
     input [31:0]    rs2,
+    input [31:0]    rs3,
     input [3:0]     opcode,
     output[31:0]    rd  
     );
@@ -86,6 +87,10 @@ module alu(
                     begin
                         rs2_5b = rs2[4:0];
                         result_alu = rs1 >>> rs2_5b;
+                    end
+                `MAC_ALU: 
+                    begin
+                        result_alu = (rs1 * rs2) + rs3;
                     end
                 default:
                     begin

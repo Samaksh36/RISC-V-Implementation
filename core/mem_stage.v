@@ -29,6 +29,8 @@ module mem_stage(
     input [31:0] rd_data_mem, // data to write in register in WB stage two main functions only sent to the output reg is SW or LW is not the alu_op
     input [31:0] mem_addr_mem, // LW/SW addr for write or read 
 
+    input [31:0] inst_mem,
+
     input [3:0] alu_op_mem, // SW or LW 
     input [31:0] sw_data, // Input from EX stage for the SW operation
 
@@ -41,7 +43,9 @@ module mem_stage(
     output reg [31:0] ram_addr_mem, // input is the calculated addr from the EX will be used for either read or write 
     output reg [31:0] ram_data_mem, // used for RAM data inputm
     output reg ram_read_enable,
-    output reg ram_write_enable
+    output reg ram_write_enable,
+
+    output reg [31:0] tb_inst_mem
     );
 
     always @(*) begin
@@ -86,6 +90,10 @@ module mem_stage(
                 end 
             endcase
         end
+    end
+
+    always @(*) begin
+        tb_inst_mem = inst_mem;
     end
 
 endmodule
