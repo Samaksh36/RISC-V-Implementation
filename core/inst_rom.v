@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 `define inst_mem_size 256
 `define inst_mem_size_two_power 20
-`define TEST_FILE "Test_Binary.txt"
+`define TEST_FILE "sss.txt"
 // Change the name of the Test File
 
 module inst_rom(

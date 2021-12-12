@@ -334,6 +334,20 @@ module ID_stage(
 			op_1 = 0;
 	end
 
+	// always @(*) begin
+	// 	if(reset == 1) begin
+	// 		op_1 = 0;
+	// 	end
+	// 	else if(alu_is_load == 0 && r1_read_enable == 1 && (rs1 == prev_rd_addr)) begin
+	// 		op_1 = prev_rd_data;
+	// 	end
+	// 	else if(r1_read_enable == 1) begin
+	// 		op_1 = r1_data; // reason for weird functions
+	// 	end
+	// 	else
+	// 		op_1 = 0;
+	// end
+
 	// Assigning R2 Value to OP2
 	always @(*) begin
 		if(reset == 1) begin
