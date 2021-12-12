@@ -26,6 +26,8 @@ module reg_ID_EX(
     
     input [31:0] inst_DE,
     
+    input [4:0] stall,
+
     input [31:0] id_op_1, // output to ALU rs1
     input [31:0] id_op_2, // output to ALU rs2
     input [31:0] id_op_3, // output to ALU rs2
@@ -59,6 +61,16 @@ module reg_ID_EX(
             ex_rd_we <= 0;
             ex_mem_offset <= 0;
         end
+        else if(stall[2] == 1) begin
+            ex_alu_op <= 0;
+            ex_op_1 <= 0;
+            ex_op_2 <= 0;
+            ex_op_3 <= 0;
+            
+            ex_rd_addr <= 0;
+            ex_rd_we <= 0;
+            ex_mem_offset <= 0;
+        end
         else begin // Introduce stalling 
             ex_op_1 <= id_op_1;
             ex_op_2 <= id_op_2;
@@ -72,7 +84,12 @@ module reg_ID_EX(
     end
     
     always @(posedge clk) begin
-       inst_EX <= inst_DE; 
+        if(stall[2] == 1) begin
+            inst_EX <= 32'bx;
+        end
+        else begin
+            inst_EX <= inst_DE; 
+        end
     end
 
 endmodule

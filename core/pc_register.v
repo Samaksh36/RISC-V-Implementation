@@ -29,7 +29,7 @@ module pc_register(
     input branch,
     input [31:0] branch_addr,
     
-    input [5:0] do_stall,
+    input [4:0] do_stall,
     
     // output reg [31:0] pc,
     output reg [31:0] pc_cpu
@@ -75,6 +75,9 @@ module pc_register(
         else if (go == 1) begin
             if (branch == 1) begin
                 pc_local <= branch_addr;
+            end
+            else if(do_stall[2] == 1) begin
+                pc_local <= pc_local;
             end
             else begin
                 pc_local <= pc_local + 4;

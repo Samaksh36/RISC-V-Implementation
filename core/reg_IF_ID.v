@@ -24,6 +24,8 @@ module reg_IF_ID(
     input clk,
     input reset,
 
+    input [4:0] stall,
+    
     input [31:0] inst_if,
     input [31:0] pc_if,
     input wire do_stall,
@@ -34,14 +36,14 @@ module reg_IF_ID(
     );
 
     always @(posedge clk) begin
-        if (reset == 1 || br == 1) begin
+        if (reset == 1 || br == 1 || (stall[2] == 0 && stall[1] == 1)) begin
             pc_id <= 0;
             inst_id <= 0;
         end
-        else begin
+        else if(stall[1] == 0) begin
             pc_id <= pc_if;
             inst_id <= inst_if; 
-        end
+        end            
     end
 
 endmodule

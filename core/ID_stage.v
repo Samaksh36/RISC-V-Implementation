@@ -59,7 +59,9 @@ module ID_stage(
 
 	output reg [31:0] pc_out, // carrying over the PC 
 	
-	output reg [31:0] ID_inst
+	output reg [31:0] ID_inst,
+
+	output wire StallCheck
 	);
 
 	wire [6:0] opcode = inst[6:0];
@@ -85,6 +87,8 @@ module ID_stage(
 	
 	wire alu_is_load;
 	assign alu_is_load = (i_alu_op_ex == `LW_ALU)? 1:0;
+
+	assign StallCheck = (alu_is_load == 1 && (rs1 == prev_rd_addr || rs2 == prev_rd_addr))? 1:0; 
 	// This always block sets the rs1 rs2 rd addrs, then sets the ALU operation to be done in the EX stage
 	
 	always @(*) begin
@@ -315,7 +319,7 @@ module ID_stage(
 		if(reset == 1) begin
 			op_1 = 0;
 		end
-		else if(r1_read_enable == 1 && (rs1 == prev_rd_addr)) begin
+		else if(alu_is_load == 0 && r1_read_enable == 1 && (rs1 == prev_rd_addr)) begin
 			if (prev_rd_addr == 5'b0) begin
 				op_1 = 0; 
             end            
@@ -335,8 +339,8 @@ module ID_stage(
 		if(reset == 1) begin
 			op_2 = 0;
 		end
-		else if(r2_read_enable == 1 && (rs2 == prev_rd_addr)) begin
-			op_2 = prev_rd_data;
+		else if(alu_is_load == 0 && r2_read_enable == 1 && (rs2 == prev_rd_addr)) begin
+			op_2 = prev_rd_data; 
 		end
 		else if (r2_read_enable == 0) begin
 			op_2 = imm1_reg; // ADDI Exclusive
@@ -368,4 +372,12 @@ module ID_stage(
 	always @(*) begin
 		ID_inst = inst;
 	end
+
+	// always @(*) begin
+	// 	stall_is_needed = 0;
+	// 	if(alu_is_load == 1 && (rs1 == prev_rd_addr || rs2 == prev_rd_addr)) begin
+	// 		stall_is_needed = 1;
+	// 	end
+	// end
+
 endmodule

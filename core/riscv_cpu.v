@@ -52,7 +52,7 @@ module riscv_cpu(
 		.branch(br),
 		.branch_addr(branch_addr),
 		
-		.do_stall(do_stall),
+		.do_stall(stall_stage),
 		
 		// .pc(next_inst_addr),
 		.pc_cpu(pc_if) // Carry over till ID
@@ -68,7 +68,14 @@ module riscv_cpu(
 
 	wire [31:0] inst_o;
 	wire [31:0] pc_id;
-	
+	wire [4:0] stall_stage;
+	stall_ctrl ctrl(
+		.reset(reset),
+		.stall_decode(stall_decode_stage),
+		.stall_stage(stall_stage)
+	);
+
+
 	IF_stage IF(
 		.reset(reset),
 		.go(go),
@@ -133,7 +140,7 @@ module riscv_cpu(
 	reg_IF_ID pipeline_reg_FD(
 		.clk(clk),
 		.reset(reset),
-
+		.stall(stall_stage),
 		.inst_if(inst_o),
 		.pc_if(pc_id),
 		.do_stall(stall_IF),
@@ -156,6 +163,7 @@ module riscv_cpu(
 	wire rd_we_data;
 	wire [3:0] reg_alu_op; // EX Input to perform the instruction
 
+	wire stall_decode_stage;
 	ID_stage id( // ADD BEQ Functionality 
 		.reset(reset),
 		.pc(pc_id_reg),
@@ -192,7 +200,9 @@ module riscv_cpu(
 		.alu_op(alu_op),
 
 		.pc_out(pc_out_id), // carrying over the PC
-		.ID_inst(ID_inst)
+		.ID_inst(ID_inst),
+
+		.StallCheck(stall_decode_stage)
 	);
 	
 	wire [31:0] reg_op1_ex;
@@ -209,7 +219,7 @@ module riscv_cpu(
 		.reset(reset),
 		
 		.inst_DE(ID_inst),
-		
+		.stall(stall_stage),
 		.id_op_1(op1_ex), // output to ALU rs1
 		.id_op_2(op2_ex), // output to ALU rs2
 		.id_op_3(op3_ex), // output to ALU rs2
@@ -269,6 +279,7 @@ module riscv_cpu(
 	// Make RAM/Memory!!!
 	ram mem(
 		.clk(clk),
+		.reset(reset),
 		.write_enable(ram_we), // Input from MEM
 		.mem_addr(ram_addr_mem), // From MEM
 		.mem_data(ram_data_mem), // from MEM
